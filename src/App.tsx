@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { clearApkgObjectUrls, type Flashcard } from "./lib/apkg";
+import { sfx } from "./lib/sfx";
 import { UploadScreen } from "./components/game/UploadScreen";
 import { BattleScreen } from "./components/game/BattleScreen";
 import { ResultScreen } from "./components/game/ResultScreen";
@@ -12,6 +13,10 @@ export function App() {
   const [stage, setStage] = useState<Stage>("upload");
   const [defeated, setDefeated] = useState(0);
   const { dark, toggle } = useTheme();
+
+  useEffect(() => {
+    sfx.prime();
+  }, []);
 
   const restart = () => {
     clearApkgObjectUrls();

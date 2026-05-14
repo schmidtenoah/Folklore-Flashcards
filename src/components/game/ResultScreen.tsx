@@ -30,7 +30,7 @@ export function ResultScreen({
 }: Props) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Toggle — top right */}
+      {/* Toggle - top right */}
       <div className="absolute top-5 right-5 z-20">
         <ThemeToggle dark={dark} onToggle={onToggleTheme} />
       </div>
@@ -62,7 +62,7 @@ export function ResultScreen({
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => { sfx.click(); onPrimary(); }}
-            className="px-6 py-3 font-display font-light tracking-widest text-[0.55rem] uppercase transition hover:opacity-90"
+            className="ui-button px-6 py-3 font-display font-light tracking-widest text-[0.55rem] uppercase"
             style={{ background: "var(--foreground)", color: "var(--background)" }}
           >
             {primaryLabel}
@@ -70,7 +70,7 @@ export function ResultScreen({
           {secondaryLabel && onSecondary && (
             <button
               onClick={() => { sfx.click(); onSecondary(); }}
-              className="px-6 py-3 font-display font-light tracking-widest text-[0.55rem] uppercase transition hover:opacity-70"
+              className="ui-button px-6 py-3 font-display font-light tracking-widest text-[0.55rem] uppercase"
               style={{ border: "1px solid var(--card-border)", color: "var(--fg-mid)" }}
             >
               {secondaryLabel}

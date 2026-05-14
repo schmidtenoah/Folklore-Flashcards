@@ -51,6 +51,7 @@
   --toggle-border: rgba(30, 26, 20, 0.10);
   --toggle-text: #a89880;
 
+  --tooltip-bg: rgba(245, 241, 234, 0.97);
   --card-foreground: var(--foreground);
   --primary: #1e1a14;
   --primary-foreground: #f5f1eb;
@@ -86,6 +87,7 @@
   --toggle-border: rgba(255, 255, 255, 0.08);
   --toggle-text: #6a6058;
 
+  --tooltip-bg: rgba(18, 15, 11, 0.95);
   --card-foreground: #c8bfb4;
   --primary: #c8bfb4;
   --primary-foreground: #0d0b09;
@@ -168,6 +170,46 @@
   /* Muted / dim text */
   .text-fg-dim { color: var(--fg-dim); }
   .text-fg-mid { color: var(--fg-mid); }
+
+  .ui-button {
+    cursor: pointer;
+    transform: translateY(0) scale(1);
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease,
+      opacity 180ms ease;
+    will-change: transform;
+  }
+  .ui-button:hover {
+    transform: translateY(-1px) scale(1.035);
+    box-shadow:
+      0 0 0 1px rgba(139, 26, 16, 0.14),
+      0 0 18px rgba(139, 26, 16, 0.22);
+    filter: brightness(1.06);
+  }
+  .ui-button:active {
+    transform: translateY(0) scale(0.985);
+  }
+  .ui-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+  .subtle-button:hover {
+    box-shadow:
+      0 0 0 1px rgba(139, 26, 16, 0.10),
+      0 0 12px rgba(139, 26, 16, 0.14);
+  }
+  .danger-button {
+    background: rgba(139, 26, 16, 0.08);
+  }
+  .danger-button:hover {
+    background: rgba(139, 26, 16, 0.16);
+    border-color: rgba(139, 26, 16, 0.62) !important;
+  }
 
   /* Seal */
   .seal {
@@ -282,6 +324,60 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   .animate-fade-in-soft { animation: fade-in-soft 0.75s ease-out both; }
+
+  /* ── Yokai folklore tooltip ── */
+  .enemy-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    outline: none;
+  }
+  .enemy-tooltip {
+    position: absolute;
+    bottom: calc(100% + 14px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    width: max-content;
+    max-width: 230px;
+    padding: 0.7rem 0.9rem;
+    background: var(--tooltip-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 3px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 30;
+    text-align: center;
+  }
+  .enemy-tooltip-wrapper:is(:hover, :focus-visible) .enemy-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    transition-delay: 320ms;
+  }
+  .enemy-tooltip-wrapper:focus-visible {
+    filter: drop-shadow(0 0 18px rgba(139, 26, 16, 0.26));
+  }
+  .enemy-tooltip-name {
+    font-size: 0.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.45em;
+    color: var(--fg-dim);
+    margin-bottom: 0.4rem;
+  }
+  .enemy-tooltip-desc {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 0.68rem;
+    line-height: 1.65;
+    color: var(--fg-mid);
+  }
+  /* Touch devices: no hover, so hide entirely */
+  @media (hover: none) {
+    .enemy-tooltip { display: none; }
+  }
 
   /* ── Anki card content ── */
   .anki-content { white-space: pre-wrap; word-break: break-word; }

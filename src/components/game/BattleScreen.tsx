@@ -4,18 +4,18 @@ import { sfx } from "@/lib/sfx";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const ENEMIES = [
-  { kanji: "鬼", name: "Oni" },
-  { kanji: "天狗", name: "Tengu" },
-  { kanji: "河童", name: "Kappa" },
-  { kanji: "雪女", name: "Yuki-onna" },
-  { kanji: "木霊", name: "Kodama" },
-  { kanji: "狐", name: "Kitsune" },
-  { kanji: "狸", name: "Tanuki" },
-  { kanji: "絡新婦", name: "Jorogumo" },
-  { kanji: "塗壁", name: "Nurikabe" },
-  { kanji: "垢嘗", name: "Akaname" },
-  { kanji: "鎌鼬", name: "Kamaitachi" },
-  { kanji: "海坊主", name: "Umibozu" },
+  { kanji: "鬼",   name: "Oni",        description: "Iron-club demons born from corrupt souls, tasked with staffing the underworld's torture chambers. During Setsubun, roasted soybeans are hurled to drive them from homes." },
+  { kanji: "天狗", name: "Tengu",      description: "Winged mountain spirits and master swordsmen said to have trained legendary warriors. Once feared as harbingers of war, they became fierce guardians of the peaks." },
+  { kanji: "河童", name: "Kappa",      description: "River creatures with a water-filled dish on their heads. Bowing can make one bow back, spill the water, and lose its strength. Dangerous to swimmers, but bound by strict honor." },
+  { kanji: "雪女", name: "Yuki-onna", description: "A pale woman who materialises in blizzards and breathes lethal cold. She sometimes spares those she finds beautiful, and legends tell of her living undetected as a mortal wife for years." },
+  { kanji: "木霊", name: "Kodama",     description: "Tree spirits dwelling in ancient forests, their presence said to explain the echoes heard in mountain passes. Felling a tree that houses one was believed to bring devastating misfortune." },
+  { kanji: "狐",   name: "Kitsune",   description: "Fox spirits that grow wiser and more powerful with age, sometimes gaining up to nine tails. Some serve Inari as messengers, and many tales give them the power to take human form." },
+  { kanji: "狸",   name: "Tanuki",    description: "Magical raccoon dogs famed for shapeshifting and their jolly nature. Skilled tricksters rather than malicious ones, they are symbols of good fortune throughout Japan." },
+  { kanji: "絡新婦", name: "Jorogumo", description: "A spider that, after four hundred years, gains the power to transform into a beautiful woman. She lures men with the sound of a biwa before binding them in silk." },
+  { kanji: "塗壁", name: "Nurikabe",  description: "An invisible wall that blocks travellers on lonely roads at night, impossible to walk around or climb. Folklore holds that striking its very base with a stick causes it to vanish." },
+  { kanji: "垢嘗", name: "Akaname",   description: "A grime-licker that slips into neglected bathrooms at night to feed on built-up filth. Its existence in folklore served as a simple warning: keep your bathroom clean." },
+  { kanji: "鎌鼬", name: "Kamaitachi", description: "Weasel-like yokai riding sudden whirlwinds and cutting people with sickle-like claws. In one three-part tradition, one knocks you down, one cuts, and one seals the wound." },
+  { kanji: "海坊主", name: "Umibozu", description: "A vast dark shape that rises from calm seas to capsize ships. Believed to be the spirit of a drowned monk; sailors hoped that throwing it a barrel might buy enough time to flee." },
 ];
 
 type Phase = "question" | "reveal" | "resolved";
@@ -140,10 +140,10 @@ export function BattleScreen({ cards, dark, onToggleTheme, onGameOver, onVictory
           <ThemeToggle dark={dark} onToggle={onToggleTheme} />
           <button
             onClick={giveUp}
-            className="px-3 py-1.5 font-display font-light tracking-widest text-[0.5rem] uppercase transition"
+            className="ui-button danger-button px-3 py-1.5 font-display font-light tracking-widest text-[0.5rem] uppercase"
             style={{
-              border: "1px solid var(--card-border)",
-              color: "var(--fg-dim)",
+              border: "1px solid rgba(139, 26, 16, 0.38)",
+              color: "var(--foreground)",
             }}
           >
             Give up
@@ -190,18 +190,28 @@ export function BattleScreen({ cards, dark, onToggleTheme, onGameOver, onVictory
             <div className="enemy-line" />
             <div className="h-2" />
 
-            {/* Kanji */}
-            <span
-              className="font-display font-light select-none leading-none"
-              style={{
-                fontSize: glyphFontSize,
-                writingMode: glyphLength > 1 ? "vertical-rl" : "horizontal-tb",
-                textOrientation: "upright",
-                textShadow: "0 0 40px rgba(139, 26, 16, 0.2)",
-              }}
+            {/* Kanji + folklore tooltip */}
+            <div
+              className="enemy-tooltip-wrapper"
+              tabIndex={0}
+              aria-describedby={`enemy-tooltip-${index}`}
             >
-              {enemy.kanji}
-            </span>
+              <span
+                className="font-display font-light select-none leading-none"
+                style={{
+                  fontSize: glyphFontSize,
+                  writingMode: glyphLength > 1 ? "vertical-rl" : "horizontal-tb",
+                  textOrientation: "upright",
+                  textShadow: "0 0 40px rgba(139, 26, 16, 0.2)",
+                }}
+              >
+                {enemy.kanji}
+              </span>
+              <div id={`enemy-tooltip-${index}`} className="enemy-tooltip" role="tooltip">
+                <p className="enemy-tooltip-name">{enemy.name}</p>
+                <p className="enemy-tooltip-desc">{enemy.description}</p>
+              </div>
+            </div>
 
             {/* Sword slash */}
             {slashing && (
@@ -256,7 +266,7 @@ export function BattleScreen({ cards, dark, onToggleTheme, onGameOver, onVictory
           {phase === "question" && (
             <button
               onClick={reveal}
-              className="px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase transition"
+              className="ui-button px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase"
               style={{
                 background: "var(--foreground)",
                 color: "var(--background)",
@@ -269,7 +279,7 @@ export function BattleScreen({ cards, dark, onToggleTheme, onGameOver, onVictory
             <>
               <button
                 onClick={() => judge(false)}
-                className="px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase transition hover:opacity-70"
+                className="ui-button px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase"
                 style={{
                   border: "1px solid var(--card-border)",
                   color: "var(--fg-mid)",
@@ -279,7 +289,7 @@ export function BattleScreen({ cards, dark, onToggleTheme, onGameOver, onVictory
               </button>
               <button
                 onClick={() => judge(true)}
-                className="px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase transition hover:opacity-90"
+                className="ui-button px-6 py-2.5 font-display font-light tracking-widest text-[0.55rem] uppercase"
                 style={{
                   background: "var(--shu)",
                   color: "#f5f1eb",

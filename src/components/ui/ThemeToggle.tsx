@@ -8,7 +8,8 @@ export function ThemeToggle({ dark, onToggle }: Props) {
     <button
       onClick={onToggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="flex items-center gap-1.5 rounded-full px-2 py-1 text-[0.55rem] uppercase tracking-[0.25em] transition-colors"
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="ui-button subtle-button flex h-8 w-8 items-center justify-center rounded-full text-[0.65rem]"
       style={{
         background: "var(--toggle-bg)",
         border: "1px solid var(--toggle-border)",
@@ -17,7 +18,8 @@ export function ThemeToggle({ dark, onToggle }: Props) {
       }}
     >
       <span
-        className="flex h-4 w-4 items-center justify-center rounded-full text-[0.65rem]"
+        aria-hidden
+        className="flex h-5 w-5 items-center justify-center rounded-full"
         style={{
           background: dark ? "#1e1a16" : "#f5f1eb",
           color: dark ? "#c8bfb4" : "#1e1a14",
@@ -26,7 +28,6 @@ export function ThemeToggle({ dark, onToggle }: Props) {
       >
         {dark ? "☀" : "☽"}
       </span>
-      {dark ? "Light" : "Dark"}
     </button>
   );
 }

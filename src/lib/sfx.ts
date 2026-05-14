@@ -1,20 +1,29 @@
 // Lightweight Web Audio sound effects — synthesized, no assets needed.
 let ctx: AudioContext | null = null;
 let muted = false;
+let unlockHandlersInstalled = false;
+
+function resumeCtx() {
+  const ac = getCtx();
+  if (ac && ac.state !== "running") void ac.resume();
+}
+
+function installUnlockHandlers() {
+  if (typeof window === "undefined" || unlockHandlersInstalled) return;
+  unlockHandlersInstalled = true;
+  window.addEventListener("pointerdown", resumeCtx, { capture: true, passive: true });
+  window.addEventListener("keydown", resumeCtx, { capture: true, passive: true });
+}
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
+  installUnlockHandlers();
   if (!ctx) {
     const Ctor =
       (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).AudioContext ??
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
     ctx = new Ctor();
-    // pointerdown fires before click, so the resume promise has time to settle
-    // before any sound is scheduled in the click handler.
-    const tryResume = () => { if (ctx && ctx.state !== "running") void ctx.resume(); };
-    window.addEventListener("pointerdown", tryResume, { capture: true, passive: true });
-    window.addEventListener("keydown", tryResume, { capture: true, passive: true });
   }
   if (ctx.state === "suspended") void ctx.resume();
   return ctx;
@@ -110,7 +119,7 @@ function playNoise(
 
 export const sfx = {
   setMuted(v: boolean) { muted = v; },
-  prime() { getCtx(); },
+  prime() { installUnlockHandlers(); },
 
   click() {
     play([{ freq: 520, time: 0, dur: 0.06, type: "triangle", gain: 0.5 }], 0.12);
