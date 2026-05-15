@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { clearApkgObjectUrls, type Flashcard } from "./lib/apkg";
 import { sfx } from "./lib/sfx";
 import { UploadScreen } from "./components/game/UploadScreen";
@@ -38,6 +39,28 @@ export function App() {
     setStage("battle");
   };
 
+  const handleGameOver = useCallback((defeatedCount: number) => {
+    flushSync(() => {
+      setDefeated(defeatedCount);
+      setStage("defeat");
+    });
+  }, []);
+
+  const handleGiveUp = useCallback((defeatedCount: number) => {
+    try {
+      sfx.defeat();
+    } catch {
+      /* audio optional */
+    }
+    handleGameOver(defeatedCount);
+  }, [handleGameOver]);
+
+  const handleVictory = useCallback(() => {
+    flushSync(() => {
+      setStage("victory");
+    });
+  }, []);
+
   if (stage === "upload") {
     return (
       <UploadScreen
@@ -67,11 +90,9 @@ export function App() {
         onToggleSound={toggleSound}
         folklore={folklore}
         dungeon={dungeon}
-        onGameOver={(d) => {
-          setDefeated(d);
-          setStage("defeat");
-        }}
-        onVictory={() => setStage("victory")}
+        onGameOver={handleGameOver}
+        onGiveUp={handleGiveUp}
+        onVictory={handleVictory}
       />
     );
   }
@@ -81,6 +102,7 @@ export function App() {
       <ResultScreen
         variant="victory"
         glyph={folklore.victoryGlyph}
+        backgroundGlyphVertical={folklore.id === "japanese"}
         title="Dungeon cleared"
         subtitle={`Every ${folklore.heroName.toLowerCase()} encounter has fallen. The knowledge is yours.`}
         detail={`${cards.length} cards · ${cards.length} hits`}
@@ -101,6 +123,7 @@ export function App() {
     <ResultScreen
       variant="defeat"
       glyph={folklore.defeatGlyph}
+      backgroundGlyphVertical={folklore.id === "japanese"}
       title="You gave in"
       subtitle="Leave the dungeon, study the answer, and come back sharper."
       detail={`${defeated} of ${cards.length} ${folklore.heroName.toLowerCase()} encounters defeated`}

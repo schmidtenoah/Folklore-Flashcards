@@ -1,6 +1,6 @@
 # Anki Lore Dungeon
 
-A browser game that turns an Anki `.apkg` deck into a folklore dungeon run. Pick a lore theme, choose a difficulty dungeon, reveal each answer, judge yourself honestly, and push through the deck.
+A browser game that turns an Anki `.apkg` deck into a folklore dungeon run. Pick a lore theme, choose a dungeon difficulty, reveal each answer, judge yourself honestly, and push through the deck.
 
 **Live:** https://schmidtenoah.github.io/Anki-Webgame/
 
@@ -8,23 +8,27 @@ A browser game that turns an Anki `.apkg` deck into a folklore dungeon run. Pick
 
 ## How to Play
 
-1. In Anki, export your deck: **File → Export**, select **Anki Deck Package (.apkg)**, and make sure **Include Media** is checked - otherwise any images in your cards won't show up.
-2. Pick a folklore theme and dungeon difficulty, then drop the `.apkg` file onto the upload screen.
-3. For each card: read the question, hit **Draw blade · Reveal**, then judge yourself - **Hit** if you knew it, **Miss** if you didn't.
-4. Dungeon 0 is practice mode with infinite lives. Later dungeons get stricter: 5, 3, 2, then 1 life.
-5. Clear every card to win. In finite-life dungeons, lose all lives and the run ends.
+1. In Anki, export your deck: **File → Export**, select **Anki Deck Package (.apkg)**, and make sure **Include Media** is checked — otherwise any images in your cards won't show up.
+2. Pick a folklore theme and dungeon on the upload screen, then drop the `.apkg` file (max **100 MB**).
+3. For each card: read the question, hit **Draw blade · Reveal**, then judge yourself — **Hit** if you knew it, **Miss** if you didn't.
+4. Three dungeon modes:
+   - **Practice** — infinite lives, low pressure
+   - **Focus** — 3 lives
+   - **Final** — 1 life (one miss ends the run)
+5. Clear every card to win. In finite-life dungeons, lose all lives and the run ends. You can **Give up** at any time to end the run early.
 
-Use the toggles in the top-right corner to switch theme or mute sound.
+Use the toggles in the top-right corner to switch light/dark theme or mute sound. Hover an enemy glyph during battle (desktop) to read a short folklore tooltip.
 
 ---
 
 ## What It Does
 
-- Loads Anki `.apkg` decks directly in the browser - no account, no upload.
+- Loads Anki `.apkg` decks directly in the browser — no account, no upload.
 - Parses the Anki SQLite collection with sql.js.
 - Renders question and answer HTML from the deck.
-- Offers Japanese, Nordic, and Celtic folklore themes through one shared configuration model.
-- Includes five dungeon difficulties from infinite-life practice to one-life exam mode.
+- Three folklore themes (Japanese, Nordic, Celtic) with per-theme glyphs, colors, and enemy rosters.
+- Three dungeon difficulties from infinite-life practice to one-life exam mode.
+- Self-judged recall: you decide Hit or Miss after seeing the answer.
 - Synthesized sound effects via the Web Audio API (no audio files).
 - Light/dark theme and persistent sound mute.
 - Static Vite app deployed on GitHub Pages.
@@ -39,18 +43,18 @@ Everything runs locally. Your deck never leaves your browser.
 - No network path for sending card data anywhere.
 - Anki card HTML is sanitized with DOMPurify before rendering.
 - Dangerous tags (`script`, `iframe`, `object`, `embed`, `svg`, `video`, `audio`) are blocked.
-- Only `.apkg` files accepted through the upload UI.
-- File size, collection size, media count, per-media, and total-media limits guard against browser freezes from oversized decks.
+- Only `.apkg` files accepted through the upload UI (100 MB file size cap).
+- Collection and media limits guard against browser freezes from oversized decks (e.g. 200 MB collection, per-media and total media caps).
 - Deck media is served through temporary object URLs and cleaned up when a new deck loads.
-- `npm audit` reports `0 vulnerabilities`.
+- `npm audit` reports `0 vulnerabilities` (production dependencies).
 
 ---
 
 ## Tech Stack
 
-- React + TypeScript
+- React 19 + TypeScript
 - Vite
-- Tailwind CSS
+- Tailwind CSS 4
 - sql.js
 - JSZip
 - DOMPurify
@@ -72,7 +76,7 @@ npm run build    # production build
 npm run preview  # preview the build
 ```
 
-The Vite base path is set to `/Anki-Webgame/` for GitHub Pages. The deployment workflow builds and publishes `dist` via GitHub Actions.
+The Vite base path is set to `/Anki-Webgame/` for GitHub Pages. Pushes to `main` trigger a GitHub Actions workflow that builds and publishes `dist`.
 
 ---
 

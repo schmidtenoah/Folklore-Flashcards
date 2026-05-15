@@ -22,6 +22,7 @@ interface Props {
   folklore: FolkloreTheme;
   dungeon: DungeonConfig;
   onGameOver: (defeated: number) => void;
+  onGiveUp: (defeated: number) => void;
   onVictory: () => void;
 }
 
@@ -34,6 +35,7 @@ export function BattleScreen({
   folklore,
   dungeon,
   onGameOver,
+  onGiveUp,
   onVictory,
 }: Props) {
   const queue = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
@@ -45,6 +47,9 @@ export function BattleScreen({
   const [damaged, setDamaged] = useState(false);
   const [exiting, setExiting] = useState<null | "victory" | "defeat">(null);
   const topRef = useRef<HTMLDivElement>(null);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const runEndedRef = useRef(false);
+  const pendingExitRef = useRef<{ kind: "victory" | "defeat"; count: number } | null>(null);
 
   const card = queue[index];
   const enemy = folklore.enemies[index % folklore.enemies.length];
@@ -64,28 +69,65 @@ export function BattleScreen({
 
   useEffect(() => { scrollToTop(); }, [index, scrollToTop]);
 
+  useEffect(() => () => {
+    if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!exiting || !pendingExitRef.current) return;
+
+    const { kind, count } = pendingExitRef.current;
+    exitTimerRef.current = setTimeout(() => {
+      exitTimerRef.current = null;
+      pendingExitRef.current = null;
+      if (kind === "victory") onVictory();
+      else onGameOver(count);
+    }, 900);
+
+    return () => {
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
+  }, [exiting, onGameOver, onVictory]);
+
   const finish = useCallback(
     (kind: "victory" | "defeat", defeatedCount: number) => {
+      if (runEndedRef.current) return;
+      runEndedRef.current = true;
+
       if (kind === "victory") sfx.victory();
       else sfx.defeat();
+
+      pendingExitRef.current = { kind, count: defeatedCount };
       setExiting(kind);
-      setTimeout(() => {
-        if (kind === "victory") onVictory();
-        else onGameOver(defeatedCount);
-      }, 900);
     },
-    [onGameOver, onVictory],
+    [],
   );
 
-  if (!card) return null;
+  const giveUp = useCallback(() => {
+    if (runEndedRef.current) return;
+    runEndedRef.current = true;
+
+    if (exitTimerRef.current) {
+      clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
+    pendingExitRef.current = null;
+    setExiting(null);
+    onGiveUp(index);
+  }, [index, onGiveUp]);
+
+  if (!card) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-fg-mid text-sm">
+        No cards in this deck.
+      </div>
+    );
+  }
 
   const reveal = () => { sfx.reveal(); setPhase("reveal"); };
-
-  const giveUp = () => {
-    if (phase === "resolved" || exiting) return;
-    setPhase("resolved");
-    finish("defeat", index);
-  };
 
   const judge = (correct: boolean) => {
     if (phase === "resolved") return;
@@ -121,7 +163,17 @@ export function BattleScreen({
       className={`min-h-screen flex flex-col p-5 md:p-8 relative overflow-hidden transition-opacity duration-700 ${
         exiting ? "opacity-0" : "opacity-100"
       }`}
-      style={{ "--lore-accent": folklore.accent } as CSSProperties}
+      style={{
+        "--lore-accent": folklore.accent,
+        "--glyph-ui-scale": folklore.glyphTuning.uiScale,
+        "--glyph-ui-x": folklore.glyphTuning.uiX,
+        "--glyph-ui-y": folklore.glyphTuning.uiY,
+        "--glyph-battle-scale": folklore.glyphTuning.battleScale,
+        "--glyph-battle-x": folklore.glyphTuning.battleX,
+        "--glyph-battle-y": folklore.glyphTuning.battleY,
+        "--glyph-seal-x": folklore.glyphTuning.sealX,
+        "--glyph-seal-y": folklore.glyphTuning.sealY,
+      } as CSSProperties}
     >
       {/* Damage vignette */}
       {damaged && (
@@ -135,7 +187,16 @@ export function BattleScreen({
       {/* HUD */}
       <header className="flex items-center justify-between mb-8 relative z-10">
         <div className="flex items-center gap-3">
-          <span className="seal h-9 w-9 text-sm">{folklore.sealGlyph}</span>
+          <span className="seal h-9 w-9">
+            <span
+              className="seal-glyph"
+              style={{
+                transform: `translate(${folklore.glyphTuning.sealX}, ${folklore.glyphTuning.sealY})`,
+              }}
+            >
+              {folklore.sealGlyph}
+            </span>
+          </span>
           <div>
             <p className="text-[0.5rem] uppercase tracking-[0.4em] text-fg-dim">{dungeon.label}</p>
             <p className="font-display font-light text-xl leading-none">
@@ -210,12 +271,13 @@ export function BattleScreen({
               aria-describedby={`enemy-tooltip-${index}`}
             >
               <span
-                className="font-display font-light select-none leading-none"
+                className="lore-glyph enemy-glyph font-light select-none leading-none"
                 style={{
                   fontSize: glyphFontSize,
                   writingMode: glyphLength > 1 ? "vertical-rl" : "horizontal-tb",
                   textOrientation: "upright",
                   textShadow: "0 0 40px rgba(139, 26, 16, 0.2)",
+                  transform: `translate(${folklore.glyphTuning.battleX}, ${folklore.glyphTuning.battleY}) scale(${folklore.glyphTuning.battleScale})`,
                 }}
               >
                 {enemy.glyph}

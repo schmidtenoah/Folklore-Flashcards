@@ -1,5 +1,5 @@
 export type FolkloreId = "japanese" | "norse" | "celtic";
-export type DungeonId = "dungeon-0" | "dungeon-1" | "dungeon-2" | "dungeon-3" | "final-dungeon";
+export type DungeonId = "dungeon-0" | "dungeon-2" | "final-dungeon";
 
 export interface LoreEnemy {
   glyph: string;
@@ -17,6 +17,17 @@ export interface FolkloreTheme {
   decorativeGlyphs: string[];
   victoryGlyph: string;
   defeatGlyph: string;
+  glyphTuning: {
+    uiScale: number;
+    uiX: string;
+    uiY: string;
+    battleScale: number;
+    battleX: string;
+    battleY: string;
+    /** HUD / home seal only; em = seal-glyph font size */
+    sealX: string;
+    sealY: string;
+  };
   enemies: LoreEnemy[];
 }
 
@@ -37,25 +48,11 @@ export const DUNGEONS: DungeonConfig[] = [
     lives: null,
   },
   {
-    id: "dungeon-1",
-    label: "Dungeon 1",
-    shortLabel: "Warm-up",
-    description: "Early exam prep with 5 lives.",
-    lives: 5,
-  },
-  {
     id: "dungeon-2",
     label: "Dungeon 2",
     shortLabel: "Focus",
     description: "Closer to the exam with 3 lives.",
     lives: 3,
-  },
-  {
-    id: "dungeon-3",
-    label: "Dungeon 3",
-    shortLabel: "Pressure",
-    description: "Mock-exam pressure with 2 lives.",
-    lives: 2,
   },
   {
     id: "final-dungeon",
@@ -77,6 +74,17 @@ export const FOLKLORES: FolkloreTheme[] = [
     decorativeGlyphs: ["天狗", "河童"],
     victoryGlyph: "天狗",
     defeatGlyph: "鬼",
+    glyphTuning: {
+      uiScale: 0.9,
+      uiX: "0em",
+      uiY: "0.32em",
+      battleScale: 0.92,
+      battleX: "0em",
+      /* CJK sits high in metrics — push down vs stage lines + seal */
+      battleY: "0.18em",
+      sealX: "0em",
+      sealY: "0.1em",
+    },
     enemies: [
       { glyph: "鬼", name: "Oni", description: "Iron-club demons born from corrupt souls, tasked with staffing the underworld's torture chambers." },
       { glyph: "天狗", name: "Tengu", description: "Winged mountain spirits and master swordsmen said to have trained legendary warriors." },
@@ -96,10 +104,20 @@ export const FOLKLORES: FolkloreTheme[] = [
     heroName: "Rune",
     shortDescription: "Younger Futhark marks and northern folklore.",
     accent: "#316b6f",
-    sealGlyph: "ᚬ",
+    sealGlyph: "ᚠ",
     decorativeGlyphs: ["ᚠ", "ᛦ"],
     victoryGlyph: "ᛏ",
     defeatGlyph: "ᚦ",
+    glyphTuning: {
+      uiScale: 0.72,
+      uiX: "0.1em",
+      uiY: "0.28em",
+      battleScale: 0.68,
+      battleX: "0.08em",
+      battleY: "0.06em",
+      sealX: "0.05em",
+      sealY: "0.02em",
+    },
     enemies: [
       { glyph: "ᚠ", name: "Fafnir", description: "A dragon of greed whose hoard turns every challenger into a test of resolve." },
       { glyph: "ᚦ", name: "Draugr", description: "A restless barrow-walker guarding memory, wealth, and unfinished oaths." },
@@ -117,10 +135,20 @@ export const FOLKLORES: FolkloreTheme[] = [
     heroName: "Ogham",
     shortDescription: "Ogham marks, green hills, and fae bargains.",
     accent: "#4f6f3f",
-    sealGlyph: "ᚁ",
+    sealGlyph: "ᚄ",
     decorativeGlyphs: ["ᚂ", "ᚄ"],
     victoryGlyph: "ᚆ",
     defeatGlyph: "ᚇ",
+    glyphTuning: {
+      uiScale: 0.92,
+      uiX: "0em",
+      uiY: "0.16em",
+      battleScale: 0.95,
+      battleX: "0em",
+      battleY: "-0.32em",
+      sealX: "0em",
+      sealY: "-0.28em",
+    },
     enemies: [
       { glyph: "ᚁ", name: "Banshee", description: "A keening omen whose cry warns that time is running short." },
       { glyph: "ᚂ", name: "Kelpie", description: "A Scottish water-horse spirit that lures riders before dragging them beneath the water." },

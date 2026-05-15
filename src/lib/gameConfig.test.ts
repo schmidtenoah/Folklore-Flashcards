@@ -17,7 +17,7 @@ describe("dungeon rules", () => {
 
   it("gets stricter as the exam dungeon rises", () => {
     const finiteLives = DUNGEONS.slice(1).map((dungeon) => getDungeonLives(dungeon));
-    expect(finiteLives).toEqual([5, 3, 2, 1]);
+    expect(finiteLives).toEqual([3, 1]);
     expect(getNextLivesAfterMiss(DUNGEONS.at(-1)!, 1)).toBe(0);
   });
 });

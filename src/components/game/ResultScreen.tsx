@@ -6,6 +6,8 @@ import type { CSSProperties } from "react";
 interface Props {
   title: string;
   glyph: string;
+  /** Vertical stack for multi-glyph Japanese; runes stay horizontal */
+  backgroundGlyphVertical?: boolean;
   subtitle: string;
   detail?: string;
   primaryLabel: string;
@@ -23,6 +25,7 @@ interface Props {
 export function ResultScreen({
   title,
   glyph,
+  backgroundGlyphVertical = false,
   subtitle,
   detail,
   primaryLabel,
@@ -50,7 +53,7 @@ export function ResultScreen({
       {/* Massive BG glyph */}
       <div
         aria-hidden
-        className="absolute inset-0 flex items-center justify-center vertical-jp font-display select-none pointer-events-none bg-kanji"
+        className={`folklore-deco ${backgroundGlyphVertical ? "vertical-jp" : ""} absolute inset-0 flex items-center justify-center select-none pointer-events-none bg-kanji`}
         style={{ fontSize: "28rem" }}
       >
         {glyph}

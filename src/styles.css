@@ -217,6 +217,7 @@
     border-radius: 3px;
     color: var(--fg-mid);
     background: color-mix(in srgb, var(--card) 74%, transparent);
+    text-align: center;
   }
   .option-button[data-selected="true"] {
     border-color: color-mix(in srgb, var(--lore-accent, var(--shu)) 64%, transparent);
@@ -236,6 +237,84 @@
     border-radius: 3px;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--lore-accent, var(--shu)) 40%, transparent);
     flex-shrink: 0;
+  }
+  .lore-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family:
+      "Segoe UI Symbol",
+      "Apple Symbols",
+      "Noto Sans Symbols 2",
+      "Noto Serif JP",
+      ui-serif,
+      Georgia,
+      serif;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    text-orientation: upright;
+    --glyph-ui-scale: 1;
+    --glyph-ui-x: 0em;
+    --glyph-ui-y: 0em;
+    --glyph-battle-scale: 1;
+    --glyph-battle-x: 0em;
+    --glyph-battle-y: 0em;
+    transform: translate(var(--glyph-ui-x), var(--glyph-ui-y)) scale(var(--glyph-ui-scale));
+  }
+  /* Large page decorations: same font stack as lore glyphs, never use UI/battle transforms */
+  .folklore-deco {
+    display: block;
+    font-family:
+      "Segoe UI Symbol",
+      "Apple Symbols",
+      "Noto Sans Symbols 2",
+      "Noto Serif JP",
+      ui-serif,
+      Georgia,
+      serif;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    text-orientation: upright;
+  }
+  .seal-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2em;
+    height: 1.2em;
+    font-size: 1.75rem;
+    font-family:
+      "Segoe UI Symbol",
+      "Apple Symbols",
+      "Noto Sans Symbols 2",
+      "Noto Serif JP",
+      ui-serif,
+      Georgia,
+      serif;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    text-orientation: upright;
+    transform: translate(var(--glyph-seal-x, 0em), var(--glyph-seal-y, 0em));
+  }
+  .option-glyph {
+    width: 2.6rem;
+    height: 2.6rem;
+    margin: 0 auto 0.35rem;
+    font-size: 2.55rem;
+  }
+  .enemy-glyph {
+    min-width: 1em;
+    min-height: 1em;
+  }
+  /* Must beat .lore-glyph alone — both classes share one transform property */
+  .lore-glyph.enemy-glyph {
+    transform: translate(var(--glyph-battle-x), var(--glyph-battle-y)) scale(var(--glyph-battle-scale));
   }
 
   /* Vertical writing */

@@ -35,6 +35,7 @@ export function UploadScreen({
   const [drag, setDrag] = useState(false);
   const selectedFolklore = FOLKLORES.find((lore) => lore.id === folkloreId) ?? FOLKLORES[0];
   const selectedDungeon = DUNGEONS.find((dungeon) => dungeon.id === dungeonId) ?? DUNGEONS[0];
+  const decoVerticalClass = folkloreId === "japanese" ? "vertical-jp" : "";
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -65,18 +66,27 @@ export function UploadScreen({
   return (
     <div
       className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
-      style={{ "--lore-accent": selectedFolklore.accent } as CSSProperties}
+      style={{
+        "--lore-accent": selectedFolklore.accent,
+        "--glyph-ui-scale": selectedFolklore.glyphTuning.uiScale,
+        "--glyph-ui-x": selectedFolklore.glyphTuning.uiX,
+        "--glyph-ui-y": selectedFolklore.glyphTuning.uiY,
+        "--glyph-seal-x": selectedFolklore.glyphTuning.sealX,
+        "--glyph-seal-y": selectedFolklore.glyphTuning.sealY,
+      } as CSSProperties}
     >
-      {/* Decorative background glyphs */}
+      {/* Decorative background glyphs — no lore-glyph transforms (em scales with huge font-size) */}
       <div
+        key={`upload-deco-a-${folkloreId}`}
         aria-hidden
-        className="absolute right-6 top-6 vertical-jp text-[10rem] leading-none font-display select-none pointer-events-none bg-kanji"
+        className={`folklore-deco ${decoVerticalClass} absolute right-6 top-6 text-[10rem] leading-none select-none pointer-events-none bg-kanji`}
       >
         {selectedFolklore.decorativeGlyphs[0]}
       </div>
       <div
+        key={`upload-deco-b-${folkloreId}`}
         aria-hidden
-        className="absolute left-6 bottom-6 vertical-jp text-[8rem] leading-none font-display select-none pointer-events-none bg-kanji"
+        className={`folklore-deco ${decoVerticalClass} absolute left-6 bottom-6 text-[8rem] leading-none select-none pointer-events-none bg-kanji`}
       >
         {selectedFolklore.decorativeGlyphs[1]}
       </div>
@@ -85,7 +95,16 @@ export function UploadScreen({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <span className="seal h-10 w-10 text-lg">{selectedFolklore.sealGlyph}</span>
+            <span className="seal h-10 w-10">
+              <span
+                className="seal-glyph"
+                style={{
+                  transform: `translate(${selectedFolklore.glyphTuning.sealX}, ${selectedFolklore.glyphTuning.sealY})`,
+                }}
+              >
+                {selectedFolklore.sealGlyph}
+              </span>
+            </span>
             <div>
               <p className="text-[0.55rem] uppercase tracking-[0.4em] text-fg-dim">Anki Lore Dungeon</p>
               <h1 className="text-2xl font-display font-light">{selectedFolklore.heroName} Dungeon</h1>
@@ -110,11 +129,18 @@ export function UploadScreen({
                       key={lore.id}
                       type="button"
                       onClick={() => { sfx.click(); onSelectFolklore(lore.id); }}
-                      className="ui-button option-button p-3 text-left"
+                      className="ui-button option-button p-3"
                       data-selected={selected}
                       aria-pressed={selected}
                     >
-                      <span className="block font-display text-xl leading-none mb-2">{lore.sealGlyph}</span>
+                      <span
+                        className="lore-glyph option-glyph"
+                        style={{
+                          transform: `translate(${lore.glyphTuning.uiX}, ${lore.glyphTuning.uiY}) scale(${lore.glyphTuning.uiScale})`,
+                        }}
+                      >
+                        {lore.sealGlyph}
+                      </span>
                       <span className="block text-[0.55rem] uppercase tracking-[0.25em]">{lore.label}</span>
                       <span className="block mt-1 text-[0.65rem] leading-snug text-fg-dim">{lore.shortDescription}</span>
                     </button>
@@ -125,7 +151,7 @@ export function UploadScreen({
 
             <section>
               <p className="text-[0.55rem] uppercase tracking-[0.35em] text-fg-dim mb-3">Dungeon</p>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {DUNGEONS.map((dungeon) => {
                   const selected = dungeon.id === dungeonId;
                   return (
@@ -133,7 +159,7 @@ export function UploadScreen({
                       key={dungeon.id}
                       type="button"
                       onClick={() => { sfx.click(); onSelectDungeon(dungeon.id); }}
-                      className="ui-button option-button p-3 text-left"
+                      className="ui-button option-button p-3"
                       data-selected={selected}
                       aria-pressed={selected}
                     >
