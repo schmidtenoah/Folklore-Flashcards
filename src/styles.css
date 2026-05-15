@@ -211,6 +211,50 @@
     background: rgba(139, 26, 16, 0.16);
     border-color: rgba(139, 26, 16, 0.62) !important;
   }
+  .run-payoff-hud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg-mid);
+    font-size: 0.72rem;
+  }
+  .run-payoff-hud span {
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--card-border);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+    white-space: nowrap;
+  }
+  .run-payoff-hud strong {
+    color: var(--foreground);
+    font-weight: 400;
+  }
+  .run-payoff-hud .streak-hot {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--lore-accent, var(--shu)) 45%, transparent);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--lore-accent, var(--shu)) 18%, transparent);
+  }
+  .run-payoff-hud .boss-chip,
+  .boss-badge {
+    color: #f5f1eb;
+    background: var(--lore-accent, var(--shu));
+    border-color: transparent;
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--lore-accent, var(--shu)) 34%, transparent);
+  }
+  .boss-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.55rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.62rem;
+  }
   .option-button {
     min-height: 5.25rem;
     border: 1px solid var(--card-border);
@@ -417,6 +461,46 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   .animate-fade-in-soft { animation: fade-in-soft 0.75s ease-out both; }
+
+  /* ── Session payoff ── */
+  .result-stats {
+    margin-top: 1.35rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1rem 0;
+  }
+  .result-callout {
+    margin-bottom: 0.8rem;
+    color: var(--foreground);
+    font-size: 0.72rem;
+  }
+  .result-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+  .result-stat-grid span,
+  .progress-summary div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--fg-dim);
+    font-size: 0.68rem;
+  }
+  .result-stat-grid strong,
+  .progress-summary strong {
+    color: var(--foreground);
+    font-size: 1rem;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+  .progress-summary {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    text-align: left;
+  }
 
   /* ── Yokai folklore tooltip ── */
   .enemy-tooltip-wrapper {

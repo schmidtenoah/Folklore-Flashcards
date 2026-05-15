@@ -10,6 +10,15 @@ import {
   type DungeonConfig,
   type FolkloreTheme,
 } from "@/lib/gameConfig";
+import {
+  createRunStats,
+  getAccuracy,
+  recordHit,
+  recordMiss,
+  type RunOutcome,
+  type RunStats,
+  type RunSummary,
+} from "@/lib/payoff";
 
 type Phase = "question" | "reveal" | "resolved";
 
@@ -21,9 +30,9 @@ interface Props {
   onToggleSound: () => void;
   folklore: FolkloreTheme;
   dungeon: DungeonConfig;
-  onGameOver: (defeated: number) => void;
-  onGiveUp: (defeated: number) => void;
-  onVictory: () => void;
+  onGameOver: (summary: RunSummary) => void;
+  onGiveUp: (summary: RunSummary) => void;
+  onVictory: (summary: RunSummary) => void;
 }
 
 export function BattleScreen({
@@ -38,7 +47,19 @@ export function BattleScreen({
   onGiveUp,
   onVictory,
 }: Props) {
-  const queue = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
+  const queue = useMemo(() => {
+    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    if (shuffled.length < 2) return shuffled;
+    let bossIdx = 0;
+    let bossLen = -1;
+    for (let i = 0; i < shuffled.length; i++) {
+      const len = shuffled[i].answerHtml?.length ?? 0;
+      if (len > bossLen) { bossLen = len; bossIdx = i; }
+    }
+    const [boss] = shuffled.splice(bossIdx, 1);
+    shuffled.push(boss);
+    return shuffled;
+  }, [cards]);
   const [index, setIndex] = useState(0);
   const [lives, setLives] = useState<number | null>(() => getDungeonLives(dungeon));
   const [phase, setPhase] = useState<Phase>("question");
@@ -46,10 +67,13 @@ export function BattleScreen({
   const [dying, setDying] = useState(false);
   const [damaged, setDamaged] = useState(false);
   const [exiting, setExiting] = useState<null | "victory" | "defeat">(null);
+  const [runStats, setRunStats] = useState<RunStats>(() => createRunStats());
   const topRef = useRef<HTMLDivElement>(null);
+  const judgeRef = useRef<HTMLDivElement>(null);
   const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const runEndedRef = useRef(false);
-  const pendingExitRef = useRef<{ kind: "victory" | "defeat"; count: number } | null>(null);
+  const runStatsRef = useRef<RunStats>(runStats);
+  const pendingExitRef = useRef<{ kind: "victory" | "defeat"; summary: RunSummary } | null>(null);
 
   const card = queue[index];
   const enemy = folklore.enemies[index % folklore.enemies.length];
@@ -61,6 +85,7 @@ export function BattleScreen({
     "3rem";
 
   const floor = index + 1;
+  const isBossFloor = floor === queue.length;
 
   const scrollToTop = useCallback(() => {
     topRef.current?.scrollIntoView({ behavior: "instant", block: "start" });
@@ -76,12 +101,12 @@ export function BattleScreen({
   useEffect(() => {
     if (!exiting || !pendingExitRef.current) return;
 
-    const { kind, count } = pendingExitRef.current;
+    const { kind, summary } = pendingExitRef.current;
     exitTimerRef.current = setTimeout(() => {
       exitTimerRef.current = null;
       pendingExitRef.current = null;
-      if (kind === "victory") onVictory();
-      else onGameOver(count);
+      if (kind === "victory") onVictory(summary);
+      else onGameOver(summary);
     }, 900);
 
     return () => {
@@ -92,18 +117,44 @@ export function BattleScreen({
     };
   }, [exiting, onGameOver, onVictory]);
 
+  const updateRunStats = useCallback((next: (stats: RunStats) => RunStats) => {
+    const updated = next(runStatsRef.current);
+    runStatsRef.current = updated;
+    setRunStats(updated);
+    return updated;
+  }, []);
+
+  const makeRunSummary = useCallback(
+    (outcome: RunOutcome, floorReached: number, stats: RunStats = runStatsRef.current): RunSummary => ({
+      ...stats,
+      outcome,
+      accuracy: getAccuracy(stats),
+      totalCards: queue.length,
+      floorReached,
+      dungeonId: dungeon.id,
+      dungeonLabel: dungeon.label,
+      folkloreId: folklore.id,
+      folkloreLabel: folklore.label,
+      completedAt: new Date().toISOString(),
+    }),
+    [dungeon.id, dungeon.label, folklore.id, folklore.label, queue.length],
+  );
+
   const finish = useCallback(
-    (kind: "victory" | "defeat", defeatedCount: number) => {
+    (kind: "victory" | "defeat", floorReached: number, stats?: RunStats) => {
       if (runEndedRef.current) return;
       runEndedRef.current = true;
 
       if (kind === "victory") sfx.victory();
       else sfx.defeat();
 
-      pendingExitRef.current = { kind, count: defeatedCount };
+      pendingExitRef.current = {
+        kind,
+        summary: makeRunSummary(kind, floorReached, stats),
+      };
       setExiting(kind);
     },
-    [],
+    [makeRunSummary],
   );
 
   const giveUp = useCallback(() => {
@@ -116,8 +167,8 @@ export function BattleScreen({
     }
     pendingExitRef.current = null;
     setExiting(null);
-    onGiveUp(index);
-  }, [index, onGiveUp]);
+    onGiveUp(makeRunSummary("defeat", floor));
+  }, [floor, makeRunSummary, onGiveUp]);
 
   if (!card) {
     return (
@@ -127,32 +178,50 @@ export function BattleScreen({
     );
   }
 
-  const reveal = () => { sfx.reveal(); setPhase("reveal"); };
+  const reveal = () => {
+    sfx.reveal();
+    setPhase("reveal");
+    const scrollToJudge = () => {
+      const el = judgeRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const target = window.scrollY + rect.bottom - window.innerHeight + 24;
+      window.scrollTo({ top: Math.max(target, 0), behavior: "smooth" });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(scrollToJudge));
+    setTimeout(scrollToJudge, 180);
+  };
 
   const judge = (correct: boolean) => {
     if (phase === "resolved") return;
     setPhase("resolved");
 
     if (correct) {
+      const nextStats = updateRunStats(recordHit);
       scrollToTop();
       sfx.slash();
-      setTimeout(() => sfx.slash(), 280);
-      setSlashing(true);
-      setTimeout(() => setDying(true), 720);
-      setTimeout(() => setSlashing(false), 980);
+      setTimeout(() => setSlashing(true), 20);
+      setTimeout(() => setDying(true), 740);
+      setTimeout(() => setSlashing(false), 1000);
       setTimeout(() => {
         setDying(false);
-        if (index + 1 >= queue.length) { finish("victory", queue.length); return; }
+        if (index + 1 >= queue.length) { finish("victory", queue.length, nextStats); return; }
         setIndex((i) => i + 1);
         setPhase("question");
       }, 1220);
     } else {
+      const nextStats = updateRunStats(recordMiss);
       sfx.miss();
       setDamaged(true);
       setTimeout(() => setDamaged(false), 750);
+      if (isBossFloor) {
+        setLives(0);
+        setTimeout(() => finish("defeat", floor, nextStats), 400);
+        return;
+      }
       const nextLives = getNextLivesAfterMiss(dungeon, lives);
       setLives(nextLives);
-      if (nextLives !== null && nextLives <= 0) { setTimeout(() => finish("defeat", index), 400); return; }
+      if (nextLives !== null && nextLives <= 0) { setTimeout(() => finish("defeat", floor, nextStats), 400); return; }
       setTimeout(() => { setIndex((i) => (i + 1) % queue.length); setPhase("question"); }, 750);
     }
   };
@@ -237,6 +306,22 @@ export function BattleScreen({
         </div>
       </header>
 
+      <section className="run-payoff-hud relative z-10 mb-5" aria-label="Run statistics">
+        <span>
+          Hits <strong>{runStats.hits}</strong>
+        </span>
+        <span>
+          Misses <strong>{runStats.misses}</strong>
+        </span>
+        <span>
+          Accuracy <strong>{getAccuracy(runStats)}%</strong>
+        </span>
+        <span className={runStats.currentStreak >= 3 ? "streak-hot" : ""}>
+          Streak <strong>{runStats.currentStreak >= 3 ? `${runStats.currentStreak} hits` : runStats.currentStreak}</strong>
+        </span>
+        {isBossFloor && <span className="boss-chip">Boss floor</span>}
+      </section>
+
       {/* Enemy stage — identical structure in all phases */}
       <section
         className={`flex flex-col items-center justify-center flex-1 relative ${
@@ -277,7 +362,7 @@ export function BattleScreen({
                   writingMode: glyphLength > 1 ? "vertical-rl" : "horizontal-tb",
                   textOrientation: "upright",
                   textShadow: "0 0 40px rgba(139, 26, 16, 0.2)",
-                  transform: `translate(${folklore.glyphTuning.battleX}, ${folklore.glyphTuning.battleY}) scale(${folklore.glyphTuning.battleScale})`,
+                  transform: `translate(${glyphLength > 1 ? (folklore.id === "japanese" ? "-0.18em" : "0em") : folklore.glyphTuning.battleX}, ${glyphLength > 1 ? "0em" : folklore.glyphTuning.battleY}) scale(${folklore.glyphTuning.battleScale})`,
                 }}
               >
                 {enemy.glyph}
@@ -305,6 +390,7 @@ export function BattleScreen({
             <p className="text-[0.5rem] uppercase tracking-[0.5em] text-fg-dim">
               {enemy.name}
             </p>
+            {isBossFloor && <p className="boss-badge">Boss</p>}
           </div>
         </div>
       </section>
@@ -337,7 +423,7 @@ export function BattleScreen({
           </div>
         )}
 
-        <div className="mt-8 flex flex-wrap gap-3 justify-end">
+        <div ref={judgeRef} className="mt-8 flex flex-wrap gap-3 justify-end">
           {phase === "question" && (
             <button
               onClick={reveal}

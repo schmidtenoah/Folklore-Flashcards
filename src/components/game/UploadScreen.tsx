@@ -106,7 +106,7 @@ export function UploadScreen({
               </span>
             </span>
             <div>
-              <p className="text-[0.55rem] uppercase tracking-[0.4em] text-fg-dim">Anki Lore Dungeon</p>
+              <p className="text-[0.55rem] uppercase tracking-[0.4em] text-fg-dim">Folklore Flashcards</p>
               <h1 className="text-2xl font-display font-light">{selectedFolklore.heroName} Dungeon</h1>
             </div>
           </div>
@@ -228,6 +228,18 @@ export function UploadScreen({
             ? "Study mode · no life limit"
             : `${selectedDungeon.label} · ${selectedDungeon.lives} ${selectedDungeon.lives === 1 ? "life" : "lives"}`}
         </p>
+
+        <footer className="mt-8 text-[0.55rem] text-fg-dim text-center leading-relaxed tracking-wide">
+          <p>
+            Runs entirely in your browser. No server, no account, no cookies. Deck content and
+            preferences stay in local storage.
+          </p>
+          <p className="mt-2">
+            Not affiliated with Anki or AnkiWeb. .apkg is a deck file format.
+            {" · "}
+            <span>Contact: schmidtenoah@gmail.com</span>
+          </p>
+        </footer>
       </div>
     </div>
   );

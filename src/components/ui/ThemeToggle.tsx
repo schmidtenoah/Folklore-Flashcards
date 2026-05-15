@@ -19,12 +19,8 @@ export function ThemeToggle({ dark, onToggle }: Props) {
     >
       <span
         aria-hidden
-        className="flex h-5 w-5 items-center justify-center rounded-full"
-        style={{
-          background: dark ? "#1e1a16" : "#f5f1eb",
-          color: dark ? "#c8bfb4" : "#1e1a14",
-          boxShadow: dark ? "none" : "0 0 0 1px rgba(30,26,20,0.12)",
-        }}
+        className="flex h-5 w-5 items-center justify-center"
+        style={{ color: "var(--toggle-text)" }}
       >
         {dark ? "☀" : "☽"}
       </span>

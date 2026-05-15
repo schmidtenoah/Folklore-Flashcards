@@ -1,6 +1,7 @@
 import { sfx } from "@/lib/sfx";
 import { SoundToggle } from "@/components/ui/SoundToggle";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import type { PayoffProgress, RunSummary } from "@/lib/payoff";
 import type { CSSProperties } from "react";
 
 interface Props {
@@ -10,6 +11,10 @@ interface Props {
   backgroundGlyphVertical?: boolean;
   subtitle: string;
   detail?: string;
+  runSummary?: RunSummary | null;
+  progress?: PayoffProgress;
+  newBestRun?: boolean;
+  completedDungeonsLabel?: string;
   primaryLabel: string;
   onPrimary: () => void;
   secondaryLabel?: string;
@@ -28,6 +33,10 @@ export function ResultScreen({
   backgroundGlyphVertical = false,
   subtitle,
   detail,
+  runSummary,
+  progress,
+  newBestRun = false,
+  completedDungeonsLabel,
   primaryLabel,
   onPrimary,
   secondaryLabel,
@@ -73,6 +82,51 @@ export function ResultScreen({
 
         <p className="text-sm text-fg-mid leading-relaxed mb-2">{subtitle}</p>
         {detail && <p className="text-sm mb-6" style={{ color: "var(--fg-dim)" }}>{detail}</p>}
+
+        {runSummary && (
+          <div className="result-stats" aria-label="Run statistics">
+            {newBestRun && <p className="result-callout">New best run sealed</p>}
+            <div className="result-stat-grid">
+              <span>
+                Hits
+                <strong>{runSummary.hits}</strong>
+              </span>
+              <span>
+                Misses
+                <strong>{runSummary.misses}</strong>
+              </span>
+              <span>
+                Accuracy
+                <strong>{runSummary.accuracy}%</strong>
+              </span>
+              <span>
+                Streak
+                <strong>{runSummary.bestStreak}</strong>
+              </span>
+            </div>
+          </div>
+        )}
+
+        {progress && (
+          <div className="progress-summary" aria-label="Long term progress">
+            <div>
+              <span>Best run</span>
+              <strong>
+                {progress.bestRun
+                  ? `${progress.bestRun.accuracy}% · ${progress.bestRun.hits}/${progress.bestRun.totalCards}`
+                  : "None yet"}
+              </strong>
+            </div>
+            <div>
+              <span>Highest floor</span>
+              <strong>{progress.highestFloor || "None"}</strong>
+            </div>
+            <div>
+              <span>Dungeons cleared</span>
+              <strong>{completedDungeonsLabel || "None yet"}</strong>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <button

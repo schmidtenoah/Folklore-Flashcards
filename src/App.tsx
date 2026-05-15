@@ -8,6 +8,14 @@ import { ResultScreen } from "./components/game/ResultScreen";
 import { useTheme } from "./hooks/useTheme";
 import { useSound } from "./hooks/useSound";
 import { DUNGEONS, FOLKLORES, getDungeon, getFolklore, type DungeonId, type FolkloreId } from "./lib/gameConfig";
+import {
+  isNewBestRun,
+  loadPayoffProgress,
+  rememberPayoffSelection,
+  savePayoffProgress,
+  updatePayoffProgress,
+  type RunSummary,
+} from "./lib/payoff";
 
 type Stage = "upload" | "battle" | "victory" | "defeat";
 
@@ -15,8 +23,19 @@ export function App() {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [stage, setStage] = useState<Stage>("upload");
   const [defeated, setDefeated] = useState(0);
-  const [folkloreId, setFolkloreId] = useState<FolkloreId>(FOLKLORES[0].id);
-  const [dungeonId, setDungeonId] = useState<DungeonId>(DUNGEONS[0].id);
+  const [progress, setProgress] = useState(loadPayoffProgress);
+  const [folkloreId, setFolkloreId] = useState<FolkloreId>(() =>
+    progress.lastFolkloreId && FOLKLORES.some((lore) => lore.id === progress.lastFolkloreId)
+      ? progress.lastFolkloreId
+      : FOLKLORES[0].id,
+  );
+  const [dungeonId, setDungeonId] = useState<DungeonId>(() =>
+    progress.lastDungeonId && DUNGEONS.some((dungeon) => dungeon.id === progress.lastDungeonId)
+      ? progress.lastDungeonId
+      : DUNGEONS[0].id,
+  );
+  const [lastRun, setLastRun] = useState<RunSummary | null>(null);
+  const [newBestRun, setNewBestRun] = useState(false);
   const { dark, toggle } = useTheme();
   const { muted, toggle: toggleSound } = useSound();
 
@@ -32,34 +51,71 @@ export function App() {
     setStage("upload");
     setCards([]);
     setDefeated(0);
+    setLastRun(null);
+    setNewBestRun(false);
   };
 
   const replay = () => {
     setDefeated(0);
+    setLastRun(null);
+    setNewBestRun(false);
     setStage("battle");
   };
 
-  const handleGameOver = useCallback((defeatedCount: number) => {
-    flushSync(() => {
-      setDefeated(defeatedCount);
-      setStage("defeat");
+  const rememberSelection = useCallback((nextFolkloreId: FolkloreId, nextDungeonId: DungeonId) => {
+    setProgress((current) => {
+      const next = rememberPayoffSelection(current, {
+        folkloreId: nextFolkloreId,
+        dungeonId: nextDungeonId,
+      });
+      savePayoffProgress(next);
+      return next;
     });
   }, []);
 
-  const handleGiveUp = useCallback((defeatedCount: number) => {
+  const selectFolklore = useCallback((id: FolkloreId) => {
+    setFolkloreId(id);
+    rememberSelection(id, dungeonId);
+  }, [dungeonId, rememberSelection]);
+
+  const selectDungeon = useCallback((id: DungeonId) => {
+    setDungeonId(id);
+    rememberSelection(folkloreId, id);
+  }, [folkloreId, rememberSelection]);
+
+  const completeRun = useCallback((summary: RunSummary, nextStage: "victory" | "defeat") => {
+    const nextProgress = updatePayoffProgress(progress, summary);
+    savePayoffProgress(nextProgress);
+
+    flushSync(() => {
+      setDefeated(summary.hits);
+      setLastRun(summary);
+      setNewBestRun(isNewBestRun(progress, summary));
+      setProgress(nextProgress);
+      setStage(nextStage);
+    });
+  }, [progress]);
+
+  const handleGameOver = useCallback((summary: RunSummary) => {
+    completeRun(summary, "defeat");
+  }, [completeRun]);
+
+  const handleGiveUp = useCallback((summary: RunSummary) => {
     try {
       sfx.defeat();
     } catch {
       /* audio optional */
     }
-    handleGameOver(defeatedCount);
+    handleGameOver(summary);
   }, [handleGameOver]);
 
-  const handleVictory = useCallback(() => {
-    flushSync(() => {
-      setStage("victory");
-    });
-  }, []);
+  const handleVictory = useCallback((summary: RunSummary) => {
+    completeRun(summary, "victory");
+  }, [completeRun]);
+
+  const completedDungeonsLabel = progress.completedDungeonIds
+    .map((id) => getDungeon(id).shortLabel)
+    .join(" / ");
 
   if (stage === "upload") {
     return (
@@ -70,8 +126,8 @@ export function App() {
         onToggleSound={toggleSound}
         folkloreId={folkloreId}
         dungeonId={dungeonId}
-        onSelectFolklore={setFolkloreId}
-        onSelectDungeon={setDungeonId}
+        onSelectFolklore={selectFolklore}
+        onSelectDungeon={selectDungeon}
         onLoaded={(c) => {
           setCards(c);
           setStage("battle");
@@ -105,7 +161,11 @@ export function App() {
         backgroundGlyphVertical={folklore.id === "japanese"}
         title="Dungeon cleared"
         subtitle={`Every ${folklore.heroName.toLowerCase()} encounter has fallen. The knowledge is yours.`}
-        detail={`${cards.length} cards · ${cards.length} hits`}
+        detail={`${cards.length} cards · ${lastRun?.hits ?? cards.length} hits`}
+        runSummary={lastRun}
+        progress={progress}
+        newBestRun={newBestRun}
+        completedDungeonsLabel={completedDungeonsLabel}
         primaryLabel="Enter again"
         onPrimary={replay}
         secondaryLabel="New deck"
@@ -127,6 +187,10 @@ export function App() {
       title="You gave in"
       subtitle="Leave the dungeon, study the answer, and come back sharper."
       detail={`${defeated} of ${cards.length} ${folklore.heroName.toLowerCase()} encounters defeated`}
+      runSummary={lastRun}
+      progress={progress}
+      newBestRun={newBestRun}
+      completedDungeonsLabel={completedDungeonsLabel}
       primaryLabel="Try again"
       onPrimary={replay}
       secondaryLabel="New deck"
