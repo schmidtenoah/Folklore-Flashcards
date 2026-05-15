@@ -83,7 +83,7 @@ export const FOLKLORES: FolkloreTheme[] = [
       /* CJK sits high in metrics — push down vs stage lines + seal */
       battleY: "0.18em",
       sealX: "0em",
-      sealY: "0.1em",
+      sealY: "0.14em",
     },
     enemies: [
       { glyph: "鬼", name: "Oni", description: "Iron-club demons born from corrupt souls, tasked with staffing the underworld's torture chambers." },
