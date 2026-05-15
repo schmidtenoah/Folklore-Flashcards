@@ -12,13 +12,13 @@ Not affiliated with Anki or AnkiWeb. `.apkg` is used here as a deck file format.
 
 1. In Anki, export your deck: **File → Export**, select **Anki Deck Package (.apkg)**, and make sure **Include Media** is checked — otherwise any images in your cards won't show up.
 2. Pick a folklore theme and dungeon on the upload screen, then drop the `.apkg` file (max **100 MB**).
-3. For each card: read the question, hit **Draw blade · Reveal**, then judge yourself — **Hit** if you knew it, **Miss** if you didn't.
+3. For each card: read the question, hit **Draw blade · Reveal**, then judge yourself - **Hit** if you knew it, **Miss** if you didn't.
 4. Three dungeon modes:
-   - **Practice** — infinite lives, low pressure
-   - **Focus** — 3 lives
-   - **Final** — 1 life (one miss ends the run)
+   - **Practice** - infinite lives, low pressure
+   - **Focus** - 3 lives
+   - **Final** - 1 life (one miss ends the run)
 5. Clear every card to win. In finite-life dungeons, lose all lives and the run ends. You can **Give up** at any time to end the run early.
-6. The final card of every run is the **boss** — the card with the longest answer in your deck. Missing the boss ends the run immediately, regardless of remaining lives.
+6. The final card of every run is the **boss** - the card with the longest answer in your deck. Missing the boss ends the run immediately, regardless of remaining lives.
 
 Use the toggles in the top-right corner to switch light/dark theme or mute sound. Hover an enemy glyph during battle (desktop) to read a short folklore tooltip.
 
