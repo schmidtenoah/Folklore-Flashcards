@@ -4,7 +4,7 @@ A browser game that turns an `.apkg` flashcard deck into a folklore dungeon run.
 
 Not affiliated with Anki or AnkiWeb. `.apkg` is used here as a deck file format.
 
-**Live:** https://schmidtenoah.github.io/Anki-Webgame/
+**Live:** [Folklore Flashcards](https://schmidtenoah.github.io/Folklore-Flashcards/)
 
 ---
 
